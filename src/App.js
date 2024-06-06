@@ -35,7 +35,6 @@ const App = () => {
       setPokemonTwo(pokeTwo);
       setPokemonOneMove(moveOne);
       setPokemonTwoMove(moveTwo);
-      setLoading(false);
     } catch (error) {
       setBattleLog([
         ...battleLog,
@@ -44,6 +43,7 @@ const App = () => {
           message: "Failed to fetch Pokémon. Please try again.",
         },
       ]);
+    } finally {
       setLoading(false);
     }
   };

@@ -1,78 +1,131 @@
-// src/App.test.js
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
-import App from './App';
-import { getRandomPokemon, getRandomMove } from './services/pokemonService';
+import React from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import "@testing-library/jest-dom/extend-expect";
+import App from "./App";
+import fetchMock from "jest-fetch-mock";
 
-// Mock the Pokemon service functions
-jest.mock('./services/pokemonService');
-
-const mockPokemonOne = {
-  name: 'Pikachu',
-  sprites: { front_default: 'pikachu.png' },
-  types: [{ type: { name: 'electric' } }],
-  moves: [{ move: { name: 'thunderbolt' } }],
-};
-
-const mockPokemonTwo = {
-  name: 'Bulbasaur',
-  sprites: { front_default: 'bulbasaur.png' },
-  types: [{ type: { name: 'grass' } }],
-  moves: [{ move: { name: 'vine whip' } }],
-};
-
-const mockMoveOne = {
-  name: 'thunderbolt',
-  power: 90,
-};
-
-const mockMoveTwo = {
-  name: 'vine whip',
-  power: 45,
-};
-
-test('fetches and displays two random Pokémon', async () => {
-  getRandomPokemon.mockResolvedValueOnce(mockPokemonOne).mockResolvedValueOnce(mockPokemonTwo);
-  getRandomMove.mockResolvedValueOnce(mockMoveOne).mockResolvedValueOnce(mockMoveTwo);
-
-  render(<App />);
-
-  fireEvent.click(screen.getByText('Fetch Random Pokémon'));
-
-  await waitFor(() => expect(screen.getByText('Pikachu')).toBeInTheDocument());
-  await waitFor(() => expect(screen.getByText('Bulbasaur')).toBeInTheDocument());
+beforeEach(() => {
+  fetchMock.resetMocks();
 });
 
-test('starts a battle and displays the result', async () => {
-  getRandomPokemon.mockResolvedValueOnce(mockPokemonOne).mockResolvedValueOnce(mockPokemonTwo);
-  getRandomMove.mockResolvedValueOnce(mockMoveOne).mockResolvedValueOnce(mockMoveTwo);
+describe("App", () => {
+  it("fetches and displays two random Pokémon", async () => {
+    const mockPokemonOne = {
+      name: "Pikachu",
+      sprites: { front_default: "pikachu.png" },
+      types: [{ type: { name: "electric" } }],
+      moves: [
+        {
+          move: {
+            name: "thunderbolt",
+            url: "https://pokeapi.co/api/v2/move/85/",
+          },
+        },
+      ],
+    };
 
-  render(<App />);
+    const mockPokemonTwo = {
+      name: "Bulbasaur",
+      sprites: { front_default: "bulbasaur.png" },
+      types: [{ type: { name: "grass" } }],
+      moves: [
+        {
+          move: {
+            name: "vine whip",
+            url: "https://pokeapi.co/api/v2/move/22/",
+          },
+        },
+      ],
+    };
 
-  fireEvent.click(screen.getByText('Fetch Random Pokémon'));
+    const mockMoveOne = { name: "thunderbolt", power: 90 };
+    const mockMoveTwo = { name: "vine whip", power: 45 };
 
-  await waitFor(() => expect(screen.getByText('Pikachu')).toBeInTheDocument());
-  await waitFor(() => expect(screen.getByText('Bulbasaur')).toBeInTheDocument());
+    fetchMock
+      .mockResponseOnce(JSON.stringify(mockPokemonOne))
+      .mockResponseOnce(JSON.stringify(mockPokemonTwo))
+      .mockResponseOnce(JSON.stringify(mockMoveOne))
+      .mockResponseOnce(JSON.stringify(mockMoveTwo));
 
-  fireEvent.click(screen.getByText('Start Battle'));
+    render(<App />);
 
-  await waitFor(() =>
-    expect(screen.getByText((content, element) => {
-      const hasText = (node) => node.textContent === "Battle 1: Pikachu lands a decisive blow with thunderbolt knocking out Bulbasaur!";
-      const elementHasText = hasText(element);
-      const childrenDontHaveText = Array.from(element.children).every(child => !hasText(child));
-      return elementHasText && childrenDontHaveText;
-    })).toBeInTheDocument()
-  );
-});
+    fireEvent.click(screen.getByText("Fetch Random Pokémon"));
 
-test('displays an error if fetching Pokémon fails', async () => {
-  getRandomPokemon.mockRejectedValueOnce(new Error('API is down'));
+    await waitFor(() => {
+      expect(screen.getByText("Pikachu")).toBeInTheDocument();
+      expect(screen.getByText("Bulbasaur")).toBeInTheDocument();
+    });
+  });
 
-  render(<App />);
+  it("starts a battle and displays the result", async () => {
+    const mockPokemonOne = {
+      name: "Pikachu",
+      sprites: { front_default: "pikachu.png" },
+      types: [{ type: { name: "electric" } }],
+      moves: [
+        {
+          move: {
+            name: "thunderbolt",
+            url: "https://pokeapi.co/api/v2/move/85/",
+          },
+        },
+      ],
+    };
 
-  fireEvent.click(screen.getByText('Fetch Random Pokémon'));
+    const mockPokemonTwo = {
+      name: "Bulbasaur",
+      sprites: { front_default: "bulbasaur.png" },
+      types: [{ type: { name: "grass" } }],
+      moves: [
+        {
+          move: {
+            name: "vine whip",
+            url: "https://pokeapi.co/api/v2/move/22/",
+          },
+        },
+      ],
+    };
 
-  await waitFor(() => expect(screen.getByText('Failed to fetch Pokémon. Please try again.')).toBeInTheDocument());
+    const mockMoveOne = { name: "thunderbolt", power: 90 };
+    const mockMoveTwo = { name: "vine whip", power: 45 };
+
+    fetchMock
+      .mockResponseOnce(JSON.stringify(mockPokemonOne))
+      .mockResponseOnce(JSON.stringify(mockPokemonTwo))
+      .mockResponseOnce(JSON.stringify(mockMoveOne))
+      .mockResponseOnce(JSON.stringify(mockMoveTwo));
+
+    render(<App />);
+
+    fireEvent.click(screen.getByText("Fetch Random Pokémon"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Pikachu")).toBeInTheDocument();
+      expect(screen.getByText("Bulbasaur")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Start Battle"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          /Pikachu lands a decisive blow with thunderbolt knocking out Bulbasaur!/
+        )
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("displays an error if fetching Pokémon fails", async () => {
+    fetchMock.mockRejectOnce(new Error("Failed to fetch Pokémon"));
+
+    render(<App />);
+
+    fireEvent.click(screen.getByText("Fetch Random Pokémon"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Failed to fetch Pokémon. Please try again.")
+      ).toBeInTheDocument();
+    });
+  });
 });

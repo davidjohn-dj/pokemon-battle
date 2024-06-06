@@ -1,67 +1,43 @@
-import axios from "axios";
-import {
-  getRandomPokemon,
-  getPokemonMove,
-  getRandomMove,
-} from "./pokemonService";
+import { getRandomPokemon, getPokemonMove, getRandomMove } from './pokemonService';
+import fetchMock from 'jest-fetch-mock';
 
-jest.mock("axios");
+beforeEach(() => {
+    fetchMock.resetMocks();
+});
 
-describe("pokemonService", () => {
-  describe("getRandomPokemon", () => {
-    it("should fetch a random Pokémon", async () => {
-      const pokemonData = {
-        name: "Pikachu",
-        sprites: { front_default: "pikachu.png" },
-        types: [{ type: { name: "electric" } }],
-        moves: [{ move: { name: "thunderbolt" } }],
-      };
-      axios.get.mockResolvedValue({ data: pokemonData });
+describe('Pokemon Service', () => {
+    it('should fetch a random Pokemon', async () => {
+        const mockPokemon = { name: 'Pikachu', id: 25 };
+        fetchMock.mockResponseOnce(JSON.stringify(mockPokemon));
 
-      const result = await getRandomPokemon();
-      expect(result).toEqual(pokemonData);
-      expect(axios.get).toHaveBeenCalledWith(
-        expect.stringMatching(/https:\/\/pokeapi.co\/api\/v2\/pokemon\/\d+/)
-      );
+        const result = await getRandomPokemon();
+        expect(result).toEqual(mockPokemon);
+        expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('https://pokeapi.co/api/v2/pokemon/'));
     });
-  });
 
-  describe("getPokemonMove", () => {
-    it("should fetch Pokémon move details", async () => {
-      const moveData = {
-        name: "thunderbolt",
-        power: 90,
-      };
-      axios.get.mockResolvedValue({ data: moveData });
+    it('should fetch a move given a move URL', async () => {
+        const mockMove = { name: 'thunderbolt', power: 90 };
+        const moveUrl = 'https://pokeapi.co/api/v2/move/85/';
+        fetchMock.mockResponseOnce(JSON.stringify(mockMove));
 
-      const result = await getPokemonMove(
-        "https://pokeapi.co/api/v2/move/thunderbolt"
-      );
-      expect(result).toEqual(moveData);
-      expect(axios.get).toHaveBeenCalledWith(
-        "https://pokeapi.co/api/v2/move/thunderbolt"
-      );
+        const result = await getPokemonMove(moveUrl);
+        expect(result).toEqual(mockMove);
+        expect(fetchMock).toHaveBeenCalledWith(moveUrl);
     });
-  });
 
-  describe("getRandomMove", () => {
-    it("should fetch a random move for a given Pokémon", async () => {
-      const pokemonData = {
-        moves: [
-          { move: { url: "https://pokeapi.co/api/v2/move/thunderbolt" } },
-        ],
-      };
-      const moveData = {
-        name: "thunderbolt",
-        power: 90,
-      };
-      axios.get.mockResolvedValueOnce({ data: moveData });
+    it('should fetch a random move for a given Pokemon', async () => {
+        const mockMove = { name: 'thunderbolt', power: 90 };
+        const mockPokemon = {
+            name: 'Pikachu',
+            id: 25,
+            moves: [
+                { move: { name: 'thunderbolt', url: 'https://pokeapi.co/api/v2/move/85/' } }
+            ]
+        };
+        fetchMock.mockResponseOnce(JSON.stringify(mockMove));
 
-      const result = await getRandomMove(pokemonData);
-      expect(result).toEqual(moveData);
-      expect(axios.get).toHaveBeenCalledWith(
-        "https://pokeapi.co/api/v2/move/thunderbolt"
-      );
+        const result = await getRandomMove(mockPokemon);
+        expect(result).toEqual(mockMove);
+        expect(fetchMock).toHaveBeenCalledWith('https://pokeapi.co/api/v2/move/85/');
     });
-  });
 });

@@ -8,8 +8,8 @@ To get started with this project, follow the steps below:
 
 ### Prerequisites
 
-- Node.js
-- npm or yarn
+- Node.js (>=18.18.2)
+- yarn
 
 ### Installation
 
